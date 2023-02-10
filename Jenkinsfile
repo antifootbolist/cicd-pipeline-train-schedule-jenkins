@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_HUB_USER = "antifootbolist"
+        APP_NAME = "train-schedule"
     }
     stages {
         stage('Build') {
@@ -17,7 +18,7 @@ pipeline {
             }
             steps {
                 script {
-                    app = docker.build("$DOCKER_HUB_USER/train-schedule")
+                    app = docker.build($APP_NAME)
                     app.inside {
                         sh 'echo $(curl localhost:8080)'
                     }
