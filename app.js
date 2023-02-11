@@ -3,6 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var broken = false;
 
 var indexRouter = require('./routes/index');
 var trainsRouter = require('./routes/trains');
@@ -19,8 +20,30 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(function (req, res, next) {
+   res.locals = {
+     broken: broken
+   };
+   next();
+});
+
 app.use('/', indexRouter);
 app.use('/trains', trainsRouter);
+
+//this endpoint performs cpu-intensive calculations
+app.get('/generate-cpu-load', function(req, res, next) {
+  var val = 0.0001
+  for (i = 0; i < 1000000; i++) {
+    val += Math.sqrt(val);
+  }
+  res.status(200).send('Doing a bunch of calculations!')
+});
+
+//this endpoint triggers the app to simulate entering an unhealthy state by causing it to return 5XX errors.
+app.get('/break', function(req, res, next) {
+	broken = true;
+	res.status(200).send('The app is now broken!')
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
